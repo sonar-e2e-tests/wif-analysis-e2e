@@ -1,0 +1,45 @@
+# Install this file once as .github/workflows/wif-analysis.yml in sonar-e2e-tests/wif-analysis-e2e.
+name: WIF core analysis
+run-name: wif-${{ inputs.correlation_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      host_url:
+        required: true
+        type: string
+      api_url:
+        required: true
+        type: string
+      audience:
+        required: true
+        type: string
+      correlation_id:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+      - uses: SonarSource/sonarqube-auth-action@v1
+        with:
+          oidc-audience: ${{ inputs.audience }}
+          sonar-api-base-url: ${{ inputs.api_url }}
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        env:
+          SONAR_HOST_URL: ${{ inputs.host_url }}
+        with:
+          args: >-
+            -Dsonar.organization=sonar-e2e-tests
+            -Dsonar.projectKey=sonar-e2e-tests_wif-analysis-e2e
+            -Dsonar.sources=src
+            -Dsonar.buildString=${{ inputs.correlation_id }}-${{ github.run_attempt }}
