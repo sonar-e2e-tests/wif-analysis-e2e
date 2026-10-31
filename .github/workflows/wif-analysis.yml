@@ -1,45 +1,39 @@
-# Install this file once as .github/workflows/wif-analysis.yml in sonar-e2e-tests/wif-analysis-e2e.
-name: WIF core analysis
 run-name: wif-${{ inputs.correlation_id }}
+env:
+  SONAR_SCANNER_JSON_PARAMS: '{"sonar.buildString":"${{ github.run_id }}-${{ github.run_attempt }}"}'
+name: Build
 on:
   workflow_dispatch:
     inputs:
-      host_url:
-        required: true
-        type: string
-      api_url:
-        required: true
-        type: string
-      audience:
-        required: true
-        type: string
       correlation_id:
         required: true
         type: string
-permissions:
-  contents: read
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
-  analysis:
+  sonarqube:
+    name: SonarQube
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          fetch-depth: 0
-      - uses: SonarSource/sonarqube-auth-action@v1
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Cache SonarQube packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          oidc-audience: ${{ inputs.audience }}
-          sonar-api-base-url: ${{ inputs.api_url }}
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - uses: SonarSource/sonarqube-auth-action@v1
+        id: auth
+        with:
+          oidc-audience: https://sc-staging.io
+          sonar-api-base-url: https://api.sc-staging.io
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
-        env:
-          SONAR_HOST_URL: ${{ inputs.host_url }}
-        with:
-          args: >-
-            -Dsonar.organization=sonar-e2e-tests
-            -Dsonar.projectKey=sonar-e2e-tests_wif-analysis-e2e
-            -Dsonar.sources=src
-            -Dsonar.buildString=${{ inputs.correlation_id }}-${{ github.run_attempt }}
