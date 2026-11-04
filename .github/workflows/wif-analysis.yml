@@ -33,7 +33,7 @@ jobs:
       - uses: SonarSource/sonarqube-auth-action@v1
         id: auth
         with:
-          oidc-audience: https://us-sc-staging.io
-          sonar-api-base-url: https://api.us-sc-staging.io
+          oidc-audience: https://au-sc-staging.io
+          sonar-api-base-url: https://api.au-sc-staging.io
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
