@@ -30,7 +30,7 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - uses: SonarSource/sonarqube-auth-action@v1
+      - uses: SonarSource/sonarqube-auth-action@v1.2
         id: auth
         with:
           oidc-audience: https://dev.sonarcloud.io
